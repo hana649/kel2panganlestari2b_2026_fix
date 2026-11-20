@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PanganLestari - Dashboard Ketahanan Pangan Papua Barat</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-logo" data-icon="sprout" data-size="26"></div>
+            <div>
+                <h1>PanganLestari</h1>
+                <small>Papua Barat · LSTM &amp; Blockchain</small>
+            </div>
+        </div>
+        <div class="nav-title">MENU NAVIGASI</div>
+        <nav class="nav">
+            <a href="#dashboard" class="nav-item active" data-target="dashboard"><span data-icon="grid"></span> Dashboard Utama</a>
+            <a href="#forecast"  class="nav-item" data-target="forecast"><span data-icon="activity"></span> Peramalan LSTM</a>
+            <a href="#commodity" class="nav-item" data-target="commodity"><span data-icon="sprout"></span> Data Komoditas</a>
+            <a href="#macro"     class="nav-item" data-target="macro"><span data-icon="cloud"></span> Indikator Cuaca &amp; Makro</a>
+            <a href="#chain"     class="nav-item" data-target="chain"><span data-icon="shield"></span> Verifikasi Blockchain</a>
+            <a href="#alerts"    class="nav-item" data-target="alerts"><span data-icon="bell"></span> Notifikasi Early Warning <b class="badge" id="alert-badge">0</b></a>
+            <a href="#reports"   class="nav-item" data-target="reports"><span data-icon="download"></span> Ekspor Laporan</a>
+        </nav>
+    </aside>
+
+    <main class="main">
+        <!-- Header -->
+        <header class="head">
+            <div>
+                <h2 id="page-title">Dashboard Utama Ketahanan Pangan</h2>
+                <p id="page-sub">Pemantauan stok proksi harga, prediksi LSTM, dan peringatan dini wilayah Papua Barat</p>
+            </div>
+            <div class="head-tools">
+                <label class="search"><span data-icon="search" data-size="16"></span>
+                    <input id="search" type="search" placeholder="Cari komoditas atau pasar...">
+                </label>
+            </div>
+        </header>
+
+        <div class="toolbar">
+            <span class="sync"><span data-icon="radio" data-size="15"></span> Sinkron PIHPS &amp; Bapanas · Aktif</span>
+            <div class="seg" id="role-switch">
+                <button class="active" data-role="admin"><span data-icon="sliders" data-size="15"></span> Admin</button>
+                <button data-role="public"><span data-icon="eye" data-size="15"></span> Pengguna Publik</button>
+            </div>
+        </div>
+
+        <!-- 1. Dashboard -->
+        <section id="dashboard" class="page active">
+            <div class="notice admin-only">
+                <span data-icon="shield" data-size="22"></span>
+                <div>
+                    <b>Mode Admin Aktif:</b> Anda dapat memperbarui harga komoditas, mengubah ambang batas status
+                    Waspada/Kritis, dan mencatat blok verifikasi baru ke ledger.
+                    <div class="thresholds">
+                        <label>Ambang Waspada ≥ <input type="number" id="th-warn" min="1" max="50" step="0.5"> %</label>
+                        <label>Ambang Kritis ≥ <input type="number" id="th-crit" min="2" max="90" step="0.5"> %</label>
+                        <button class="btn btn-ghost" id="th-reset">Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats" id="stats"></div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>Tren Harga — Historis vs Proyeksi LSTM</h3>
+                        <p class="muted" id="chart-sub"></p>
+                    </div>
+                    <div class="controls">
+                        <select id="chart-commodity"></select>
+                        <div class="seg small" id="chart-horizon">
+                            <button class="active" data-h="7">7 Hari</button>
+                            <button data-h="30">30 Hari</button>
+                            <button data-h="90">90 Hari</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart" id="main-chart"></div>
+                <div class="metrics">
+                    <div><span>RMSE</span><b>0,054</b></div>
+                    <div><span>MAE</span><b>160,25</b></div>
+                    <div><span>MAPE rata-rata</span><b id="m-mape">4,32%</b></div>
+                    <div><span>R² Score</span><b>0,952</b></div>
+                    <div><span>Arsitektur</span><b>LSTM 256-128-64-32</b></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h3>Komoditas Perlu Perhatian</h3></div>
+                <div class="table-wrap"><table id="tbl-watch"></table></div>
+            </div>
+        </section>
+
+        <!-- 2. Peramalan -->
+        <section id="forecast" class="page">
+            <div class="panel">
+                <h3>Simulasi Peramalan Model LSTM</h3>
+                <form id="forecast-form" class="form-row">
+                    <label>Komoditas <select id="fc-commodity"></select></label>
+                    <label>Horizon (hari) <input type="number" id="fc-horizon" value="30" min="1" max="365"></label>
+                    <button type="submit" class="btn btn-primary"><span data-icon="play" data-size="15"></span> Jalankan Prediksi</button>
+                </form>
+                <div id="fc-result" hidden>
+                    <div class="fc-meta" id="fc-meta"></div>
+                    <div class="chart" id="fc-chart"></div>
+                    <div class="table-wrap short"><table id="fc-table"></table></div>
+                    <button class="btn btn-secondary admin-only" id="fc-record"><span data-icon="plus" data-size="15"></span> Catat Hasil ke Ledger Blockchain</button>
+                </div>
+                <p class="muted" id="fc-hint">Pilih komoditas dan horizon, lalu klik <b>Jalankan Prediksi</b>.</p>
+            </div>
+        </section>
+
+        <!-- 3. Komoditas -->
+        <section id="commodity" class="page">
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>Data Komoditas &amp; Status Harga</h3>
+                    <span class="muted admin-only">Klik kolom <b>Harga Saat Ini</b> untuk mengubah nilainya.</span>
+                </div>
+                <div class="table-wrap"><table id="tbl-commodity"></table></div>
+            </div>
+        </section>
+
+        <!-- 4. Makro -->
+        <section id="macro" class="page">
+            <div class="panel">
+                <h3>Indikator Cuaca &amp; Makroekonomi</h3>
+                <div class="exo-grid" id="exo-grid"></div>
+            </div>
+        </section>
+
+        <!-- 5. Blockchain -->
+        <section id="chain" class="page">
+            <div class="panel">
+                <div class="panel-head">
+                    <div>
+                        <h3>Verifikasi Keaslian Data (Ledger Blockchain)</h3>
+                        <p class="muted">Setiap hasil prediksi dicatat dengan hash SHA-256 yang terhubung ke blok sebelumnya.</p>
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-primary" id="chain-verify">Verifikasi Seluruh Rantai</button>
+                        <button class="btn btn-ghost admin-only" id="chain-tamper">Simulasi Manipulasi</button>
+                        <button class="btn btn-ghost admin-only" id="chain-reset">Reset Ledger</button>
+                    </div>
+                </div>
+                <div id="chain-status" class="chain-status" hidden></div>
+                <div class="table-wrap"><table id="tbl-chain"></table></div>
+            </div>
+        </section>
+
+        <!-- 6. Notifikasi -->
+        <section id="alerts" class="page">
+            <div class="panel">
+                <h3>Notifikasi Early Warning</h3>
+                <div id="alert-list" class="alert-list"></div>
+            </div>
+        </section>
+
+        <!-- 7. Ekspor -->
+        <section id="reports" class="page">
+            <div class="panel">
+                <h3>Ekspor Laporan &amp; Data</h3>
+                <p class="muted">Unduh data terkini dalam format CSV (dapat dibuka di Excel).</p>
+                <div class="btn-row">
+                    <button class="btn btn-primary" id="btn-export-csv"><span data-icon="download" data-size="15"></span> Unduh Data Komoditas (.CSV)</button>
+                    <button class="btn btn-secondary" id="btn-export-fc"><span data-icon="download" data-size="15"></span> Unduh Proyeksi 30 Hari (.CSV)</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/chart-custom.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
